@@ -1,0 +1,32 @@
+{
+    "name": "donbidon/lib-fs",
+    "type": "library",
+    "description": "File system related library",
+    "homepage": "https://github.com/donbidon/lib-fs",
+    "keywords": ["php", "library", "file", "system", "fs"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name":     "donbidon",
+            "homepage": "http://donbidon.rf.gd/"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable":      true,
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "require-dev": {
+       "donbidon/lib-phpunit": "dev-develop"
+     },
+    "autoload": {
+        "psr-4": {
+             "donbidon\\Lib\\FileSystem\\": "src"
+         }
+    },
+    "autoload-dev": {
+        "psr-4": {
+             "donbidon\\Lib\\FileSystem\\": "tests"
+         }
+    }
+}
