@@ -8,6 +8,8 @@
  * @license   https://opensource.org/licenses/mit-license.php
  */
 
+declare(strict_types=1);
+
 namespace donbidon\Lib\FileSystem;
 
 use InvalidArgumentException;
@@ -73,7 +75,7 @@ class Tools
      * @throws InvalidArgumentException  If passed path isn't a directory.
      * @throws RuntimeException  If Passed path cannot be read.
      */
-    public static function walkDir($path, $callback)
+    public static function walkDir(string $path, callable $callback): void
     {
         $realPath = realpath($path);
         if (!is_dir($realPath)) {
@@ -106,12 +108,12 @@ class Tools
      *
      * @return void
      */
-    public static function removeDir($path, $clearStatCache = TRUE)
+    public static function removeDir(string $path, bool $clearStatCache = TRUE): void
     {
         self::walkDir($path, [__CLASS__, 'rmFile']);
         rmdir($path);
         if ($clearStatCache) {
-            clearstatcache(NULL, $path);
+            clearstatcache(true, $path);
         }
     }
 
@@ -130,7 +132,7 @@ class Tools
      *
      * @return bool
      */
-    public static function filterDots($path)
+    public static function filterDots(string $path): bool
     {
         $result = !(
             DIRECTORY_SEPARATOR . ".." == substr($path, -3) ||
@@ -182,13 +184,13 @@ class Tools
      * @return array
      */
     public static function search(
-        $dir,
-        $flags = 0,
-        array $patterns = [],
-        array $recursive = [],
-        $needle = null,
-        $callback = null
-    )
+        string   $dir,
+        int      $flags = 0,
+        array    $patterns = [],
+        array    $recursive = [],
+        bool     $needle = null,
+        callable $callback = null
+    ): array
     {
         $return = [];
         foreach ($patterns as $pattern) {
@@ -196,9 +198,9 @@ class Tools
             $result = glob($path, $flags);
             $result = array_filter($result, [__CLASS__, "filterDots"]);
             if (!is_null($needle)) {
-                self::$needle = $needle;
+                static::$needle = $needle;
                 $result = array_filter($result, [__CLASS__, "filterFileByContents"]);
-                self::$needle = null;
+                static::$needle = null;
             }
             if (is_null($callback)) {
                 $return = array_merge($return, $result);
@@ -249,7 +251,7 @@ class Tools
      *
      * @internal
      */
-    protected static function rmFile(SplFileInfo $file)
+    protected static function rmFile(SplFileInfo $file): void
     {
         $path = $file->getRealPath();
         $file->isDir() ? rmdir($path) : unlink($path);
@@ -264,13 +266,13 @@ class Tools
      *
      * @internal
      */
-    protected static function filterFileByContents($path)
+    protected static function filterFileByContents(string $path): bool
     {
         $contents = file_get_contents($path);
         $result =
-            "/" == substr(self::$needle, 0, 1)
-                ? (bool)preg_match(self::$needle, $contents)
-                : FALSE !== strpos($contents, self::$needle);
+            "/" == substr(static::$needle, 0, 1)
+                ? (bool)preg_match(static::$needle, $contents)
+                : FALSE !== strpos($contents, static::$needle);
 
         return $result;
     }

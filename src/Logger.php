@@ -8,6 +8,8 @@
  * @license   https://opensource.org/licenses/mit-license.php
  */
 
+declare(strict_types=1);
+
 namespace donbidon\Lib\FileSystem;
 
 /**
@@ -43,11 +45,12 @@ class Logger
     /**
      * Constructor.
      *
-     * @param  array $options  Following pairs of keys and values can be passed:
+     * @param array $options  Following pairs of keys and values can be passed:
      * - 'path'     - default path,
      * - 'maxSize'  - max file size,
      * - 'rotation' - number of files to rotate log,
-     * - 'rights'    - file mode, chmod() will be skipped if null passed.
+     * - 'rights'   - file mode, chmod() will be skipped if null passed.
+     *
      * @return void
      */
     public function __construct(array $options = [
@@ -63,12 +66,14 @@ class Logger
     /**
      * Sets default options.
      *
-     * @param  array $options
-     * @param  bool  $override  Flag specifying do override whole defaults
+     * @param array $options
+     * @param bool  $override  Flag specifying do override whole defaults
+     *
      * @return void
-     * @see    self::__construct()  $options parameter description
+     *
+     * @see self::__construct()  $options parameter description
      */
-    public function setDefaults(array $options, $override = FALSE)
+    public function setDefaults(array $options, bool $override = FALSE): void
     {
         $this->defaults = $options +
             ($override ? [] : [
@@ -82,15 +87,18 @@ class Logger
     /**
      * Rotate log files and logs message.
      *
-     * @param  string $message
-     * @param  string $path     If null passed will be used from options
-     * @param  array  $options
+     * @param string $message
+     * @param string $path     If null passed will be used from options
+     * @param array  $options
+     *
      * @return void
+     *
      * @throws \RuntimeException  If path taken from args and options is missing.
      * @throws \RuntimeException  If directory from path is invalid.
-     * @see    self::__construct()  $options parameter description
+     *
+     * @see self::__construct()  $options parameter description
      */
-    public function log($message, $path = null, array $options = [])
+    public function log(string $message, string $path = null, array $options = []): void
     {
         $options =
             $options +
@@ -112,7 +120,7 @@ class Logger
             $realPath,
             basename($path)
         );
-        clearstatcache(NULL, $path);
+        clearstatcache(true, $path);
         if (file_exists($path) && (filesize($path) > $options['maxSize'])) {
             for ($i = $options['rotation']; $i > 0; --$i) {
                 $destPath = sprintf("%s.%d", $path, $i);

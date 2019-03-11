@@ -8,16 +8,20 @@
     "authors": [
         {
             "name":     "donbidon",
-            "homepage": "http://donbidon.rf.gd/"
+            "homepage": "http://donbidon.rf.gd/",
+            "role":     "lead"
         }
     ],
+    "support": {
+        "issues": "https://github.com/donbidon/lib-fs/issues"
+    },
     "minimum-stability": "dev",
     "prefer-stable":      true,
     "require": {
-        "php": ">=5.4.0"
+        "php": "^7.2"
     },
     "require-dev": {
-       "donbidon/lib-phpunit": "dev-develop"
+        "phpunit/phpunit": "^8"
      },
     "autoload": {
         "psr-4": {

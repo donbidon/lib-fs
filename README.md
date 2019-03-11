@@ -1,41 +1,45 @@
 # File system related library
+[![Latest Stable Version](https://img.shields.io/packagist/v/donbidon/lib-fs.svg?style=flat-square)](https://packagist.org/packages/donbidon/lib-fs)
+[![Packagist](https://img.shields.io/packagist/dt/donbidon/lib-fs.svg)](https://packagist.org/packages/donbidon/lib-fs)
+![PHP from Packagist](https://img.shields.io/packagist/php-v/donbidon/lib-fs.svg)
+[![GitHub license](https://img.shields.io/github/license/donbidon/lib-fs.svg)](https://github.com/donbidon/lib-fs/blob/master/LICENSE)
+
+[![Build Status](https://travis-ci.com/donbidon/lib-fs.svg?branch=master)](https://travis-ci.com/donbidon/lib-fs)
+[![Code Coverage](https://codecov.io/gh/donbidon/lib-fs/branch/master/graph/badge.svg)](https://codecov.io/gh/donbidon/lib-fs)
+[![GitHub issues](https://img.shields.io/github/issues-raw/donbidon/lib-fs.svg)](https://github.com/donbidon/lib-fs/issues)
+
+[![Donate to liberapay](http://img.shields.io/liberapay/receives/don.bidon.svg?logo=liberapay)](https://liberapay.com/don.bidon/donate)
 
 Look [API documentation](https://donbidon.github.io/docs/packages/lib-fs/).
 
 ## Installing
-Run `composer require donbidon/lib-fs 0.1.0` or add following code to your "composer.json" file:
-```json
-    "require": {
-        "donbidon/lib-fs": "0.1.0"
-    }
-```
-and run `composer update`.
+Run `composer require donbidon/lib-fs ~0.2`.
 
 ## Usage
 
-### Tools
-
-#### Walking directory recursively
+### Tools: walking directory recursively
 ```php
-function walker(\SplFileInfo $file)
-{
-    $path = $file->getRealPath();
-    echo sprintf(
-        "[%s] %s%s", $file->isDir() ? "DIR " : "file",
-        $path,
-        PHP_EOL
-    );
-}
+\donbidon\Lib\FileSystem\Tools::walkDir(
+    "/path/to/dir",
+    function (\SplFileInfo $file): void
+    {
+        $path = $file->getRealPath();
+        echo sprintf(
+            "[%s] %s%s", $file->isDir() ? "DIR " : "file",
+            $path,
+            PHP_EOL
+        );
+    }
 
-\donbidon\Lib\FileSystem\Tools::walkDir("/path/to/dir", 'walker');
+);
 ```
 
-#### Removing directory recursively
+### Tools: removing directory recursively
 ```php
 \donbidon\Lib\FileSystem\Tools::removeDir("/path/to/dir");
 ```
 
-#### Search and repkace recursively
+#### Tools: searching & replacing recursively
 ```php
 \donbidon\Lib\FileSystem\Tools::search(
     "/path/to/top/level",
@@ -45,7 +49,7 @@ function walker(\SplFileInfo $file)
     "needle",  // String to search in files, if starts with "/" processes
                // like regular expression
     // Callback
-    function ($path)
+    function (string $path): void
     {
         $contents = file_get_contents($path);
         $contents = preg_replace("/needle/", "replace", $contents);
