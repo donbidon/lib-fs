@@ -39,7 +39,7 @@ Run `composer require donbidon/lib-fs ~0.2`.
 \donbidon\Lib\FileSystem\Tools::removeDir("/path/to/dir");
 ```
 
-#### Tools: searching & replacing recursively
+### Tools: searching & replacing recursively
 ```php
 \donbidon\Lib\FileSystem\Tools::search(
     "/path/to/top/level",
@@ -68,3 +68,6 @@ $logger = new \donbidon\Lib\FileSystem\Logger([
 ]);
 $logger->log("Foo");
 ```
+
+## Donate
+[Yandex.Money, Visa, MasterCard, Maestro](https://money.yandex.ru/to/41001351141494) or visit [Liberapay](https://liberapay.com/don.bidon/donate).
