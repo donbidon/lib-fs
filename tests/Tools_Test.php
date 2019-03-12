@@ -55,6 +55,8 @@ class Tools_Test extends \PHPUnit\Framework\TestCase
         $this->dirStructure = [];
         $this->createDirStructure();
         Tools::walkDir($this->tempPath, [$this, 'buildDirStructure']);
+        sort($this->dirStructure);
+        fwrite(STDERR, var_export($this->dirStructure, TRUE));###
         $this->assertEquals(
             [
                 "[F] dir1/dir11/dir111/deepFile",

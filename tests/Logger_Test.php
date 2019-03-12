@@ -177,6 +177,7 @@ class Logger_Test extends \PHPUnit\Framework\TestCase
                 $files[] = $fileInfo->getFilename();
             }
         }
+        sort($files);
 
         return $files;
     }
