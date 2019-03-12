@@ -9,7 +9,9 @@ install:
   - travis_retry composer install --no-interaction --no-ansi --no-progress --no-suggest --prefer-source
 
 script:
-  - mkdir -p $TMPDIR/donbidon/tests/lib-fs
+#  - mkdir -p $TMPDIR/donbidon/tests/lib-fs
+  - printenv
+  - set
   - phpunit -c phpunit.xml
 
 after_success:
