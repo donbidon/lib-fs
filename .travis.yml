@@ -7,11 +7,11 @@ php:
 
 install:
   - mkdir -p $TRAVIS_TMPDIR/donbidon/tests/lib-fs
-  - chmod 0444 $TRAVIS_TMPDIR/donbidon/tests/lib-fs
   - travis_retry composer install --no-interaction --no-ansi --no-progress --no-suggest --prefer-source
   - echo "sys_temp_dir=$TRAVIS_TMPDIR" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
 
 script:
+  - chmod -R 777 $TRAVIS_TMPDIR/donbidon
   - echo "$TRAVIS_TMPDIR"
   - ls -al "$TRAVIS_TMPDIR"
 #  - printenv
