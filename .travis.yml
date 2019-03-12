@@ -6,19 +6,20 @@ php:
   - 7.2
 
 install:
-  - ls -al $TRAVIS_TMPDIR
-#  - travis_retry composer install --no-interaction --no-ansi --no-progress --no-suggest --prefer-source
-#  - echo "sys_temp_dir=$TRAVIS_TMPDIR" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - echo "$TRAVIS_TMPDIR"
+  - ls -al "$TRAVIS_TMPDIR"
+  - mkdir -p $TRAVIS_TMPDIR/donbidon/tests/lib-fs
+  - travis_retry composer install --no-interaction --no-ansi --no-progress --no-suggest --prefer-source
+  - echo "sys_temp_dir=$TRAVIS_TMPDIR" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
 
 script:
-#  - mkdir -p $TMPDIR/donbidon/tests/lib-fs
 #  - printenv
 #  - set
 #  - phpunit -dsys_temp_dir="" -c phpunit.xml
-#  - phpunit -c phpunit.xml
+  - phpunit -c phpunit.xml
 
 after_success:
-#  - bash <(curl -s https://codecov.io/bash)
+  - bash <(curl -s https://codecov.io/bash)
 
 notifications:
   email: false
