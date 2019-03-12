@@ -22,7 +22,7 @@ class Tools_Test extends \PHPUnit\Framework\TestCase
     /**
      * Access rights for temporary directory
      */
-    const RIGHTS = 0666;
+    const RIGHTS = 0777;
 
     /**
      * Temporary directory path
@@ -120,6 +120,7 @@ class Tools_Test extends \PHPUnit\Framework\TestCase
             DIRECTORY_SEPARATOR,
             [$this->tempPath, "dir1", "dir11", "dir111"]
         );
+        $umask = umask(0);
         mkdir($deepPath, self::RIGHTS, TRUE);
         mkdir(
             implode(
@@ -137,6 +138,7 @@ class Tools_Test extends \PHPUnit\Framework\TestCase
             self::RIGHTS,
             TRUE
         );
+        umask($umask);
         file_put_contents(
             implode(
                 DIRECTORY_SEPARATOR,
