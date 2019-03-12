@@ -6,18 +6,20 @@ php:
   - 7.2
 
 install:
-  - mkdir -p $TRAVIS_TMPDIR/donbidon/tests/lib-fs
+#  - mkdir -p $TRAVIS_TMPDIR/donbidon/tests/lib-fs
+#  - chmod -R 777 $TRAVIS_TMPDIR/donbidon
+  - chmod 777 $TRAVIS_TMPDIR
   - travis_retry composer install --no-interaction --no-ansi --no-progress --no-suggest --prefer-source
   - echo "sys_temp_dir=$TRAVIS_TMPDIR" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
 
 script:
-  - chmod -R 777 $TRAVIS_TMPDIR/donbidon
   - echo "$TRAVIS_TMPDIR"
   - ls -al "$TRAVIS_TMPDIR"
 #  - printenv
 #  - set
 #  - phpunit -dsys_temp_dir="" -c phpunit.xml
   - phpunit -c phpunit.xml
+  - ls -al "$TRAVIS_TMPDIR"
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
