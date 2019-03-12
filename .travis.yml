@@ -10,9 +10,9 @@ install:
 
 script:
 #  - mkdir -p $TMPDIR/donbidon/tests/lib-fs
-  - printenv
-  - set
-  - phpunit -c phpunit.xml
+#  - printenv
+#  - set
+  - phpunit -dsys_temp_dir="$TRAVIS_TMPDIR" -c phpunit.xml
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
