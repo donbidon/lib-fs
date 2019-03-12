@@ -16,7 +16,6 @@ Look [API documentation](https://donbidon.github.io/docs/packages/lib-fs/).
 Run `composer require donbidon/lib-fs ~0.2`.
 
 ## Usage
-
 ### Tools: walking directory recursively
 ```php
 \donbidon\Lib\FileSystem\Tools::walkDir(
@@ -30,7 +29,6 @@ Run `composer require donbidon/lib-fs ~0.2`.
             PHP_EOL
         );
     }
-
 );
 ```
 
