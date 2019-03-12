@@ -93,7 +93,7 @@ class Logger
      *
      * @return void
      *
-     * @throws \RuntimeException  If path taken from args and options is missing.
+     * @throws \RuntimeException  If path taken from args and options are missing.
      * @throws \RuntimeException  If directory from path is invalid.
      *
      * @see self::__construct()  $options parameter description
