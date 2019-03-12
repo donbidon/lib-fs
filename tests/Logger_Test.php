@@ -22,7 +22,7 @@ class Logger_Test extends \PHPUnit\Framework\TestCase
      *
      * @vat int
      */
-    const LOG_DIRECTORY_RIGHTS = 0666;
+    const LOG_DIRECTORY_RIGHTS = 0777;
 
     /**
      * Tests logging without/with rotation.
@@ -149,7 +149,6 @@ class Logger_Test extends \PHPUnit\Framework\TestCase
         if (file_exists($path)) {
             Tools::removeDir($path);
         }
-        fwrite(STDERR, "\n[{$path}]\n\n");###
         mkdir($path, self::LOG_DIRECTORY_RIGHTS, TRUE);
     }
 
