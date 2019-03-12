@@ -2,7 +2,6 @@
     "name": "donbidon/lib-fs",
     "type": "library",
     "description": "File system related library",
-    "homepage": "https://github.com/donbidon/lib-fs",
     "keywords": ["php", "library", "file", "system", "fs"],
     "license": "MIT",
     "authors": [
