@@ -149,7 +149,6 @@ class Logger_Test extends \PHPUnit\Framework\TestCase
         if (file_exists($path)) {
             Tools::removeDir($path);
         }
-        fwrite(STDERR, "\n[{$path}]\n\n");###
         mkdir($path, self::LOG_DIRECTORY_RIGHTS, TRUE);
     }
 
