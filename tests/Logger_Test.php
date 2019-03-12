@@ -29,6 +29,7 @@ class Logger_Test extends \PHPUnit\Framework\TestCase
      *
      * @return void
      *
+     * @cover donbidon\Lib\FileSystem\Logger::__construct()
      * @cover donbidon\Lib\FileSystem\Logger::log()
      * @cover donbidon\Lib\FileSystem\Logger::setDefaults()
      *
@@ -140,7 +141,7 @@ class Logger_Test extends \PHPUnit\Framework\TestCase
      *
      * @return void
      *
-     * @see self::testLog()
+     * @see self::testLogging()
      *
      * @internal
      */
@@ -161,11 +162,11 @@ class Logger_Test extends \PHPUnit\Framework\TestCase
      *
      * @return array
      *
-     * @see self::testLog()
+     * @see self::testLogging()
      *
      * @internal
      */
-    protected function getDirectoryAsArray($path): array
+    protected function getDirectoryAsArray(string $path): array
     {
         $files = [];
         $dir = iterator_to_array(new RecursiveDirectoryIterator(
