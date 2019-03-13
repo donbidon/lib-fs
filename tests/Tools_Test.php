@@ -10,12 +10,12 @@ declare(strict_types=1);
 
 namespace donbidon\Lib\FileSystem;
 
+use AssertionError;
+use InvalidArgumentException;
 use SplFileInfo;
 
 /**
  * Tools class unit tests.
- *
- * @todo Cover by tests Tools::search().
  */
 class Tools_Test extends \PHPUnit\Framework\TestCase
 {
@@ -44,17 +44,33 @@ class Tools_Test extends \PHPUnit\Framework\TestCase
     protected $dirStructure;
 
     /**
+     * Tests exception when passed wrong path.
+     *
+     * @return void
+     *
+     * @cover donbidon\Lib\FileSystem\Tools::walkDir()
+     */
+    public function testInvalidDir(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            "Passed path \"./tests/invalid/path\" (false) isn't a directory"
+        );
+        Tools::walkDir("./tests/invalid/path", [$this, "buildDirStructure"]);
+    }
+
+    /**
      * Tests recursive walking by directory.
      *
      * @return void
      *
-     * @cover donbidon\Lib\FileSystem\Tools::walk()
+     * @cover donbidon\Lib\FileSystem\Tools::walkDir()
      */
-    public function testWalk(): void
+    public function testWalking(): void
     {
         $this->dirStructure = [];
         $this->createDirStructure();
-        Tools::walkDir($this->tempPath, [$this, 'buildDirStructure']);
+        Tools::walkDir($this->tempPath, [$this, "buildDirStructure"]);
         sort($this->dirStructure);
         $this->assertEquals(
             [
@@ -69,7 +85,6 @@ class Tools_Test extends \PHPUnit\Framework\TestCase
             ],
             $this->dirStructure
         );
-        Tools::removeDir($this->tempPath);
     }
 
     /**
@@ -77,13 +92,154 @@ class Tools_Test extends \PHPUnit\Framework\TestCase
      *
      * @return void
      *
-     * @cover donbidon\Lib\FileSystem\Tools::remove()
+     * @cover donbidon\Lib\FileSystem\Tools::removeDir()
      */
-    public function testRemove(): void
+    public function testRemoving(): void
     {
         $this->createDirStructure();
         Tools::removeDir($this->tempPath);
         $this->assertFalse(is_dir($this->tempPath));
+    }
+
+    /**
+     * Tests recursive searching passing default args.
+     *
+     * @return void
+     *
+     * @cover donbidon\Lib\FileSystem\Tools::search()
+     */
+    public function testSearchingPassingEmptyArgs(): void
+    {
+        $this->assertEquals(
+            [],
+            Tools::search("")
+        );
+    }
+
+    /**
+     * Tests recursive searching.
+     *
+     * @return void
+     *
+     * @cover donbidon\Lib\FileSystem\Tools::search()
+     */
+    public function testSearching(): void
+    {
+        $this->createDirStructure();
+
+        $expected = ["dir1", "dir2", "dir3", "file", ];
+        $actual = array_map(
+            [$this, "cutTempPath"],
+            Tools::search($this->tempPath, 0, ["*"])
+        );
+        sort($actual);
+        $this->assertEquals($expected, $actual);
+
+        array_pop($expected);
+        $actual = array_map(
+            [$this, "cutTempPath"],
+            Tools::search($this->tempPath, GLOB_ONLYDIR, ["*"])
+        );
+        sort($actual);
+        $this->assertEquals($expected, $actual);
+
+        $expected = [
+            "dir1",
+            implode(DIRECTORY_SEPARATOR, ["dir1", "dir11", ]),
+            implode(DIRECTORY_SEPARATOR, ["dir1", "dir11", "dir111", ]),
+            implode(DIRECTORY_SEPARATOR, ["dir1", "dir11", "dir111", "deepFile", ]),
+            "dir2",
+            implode(DIRECTORY_SEPARATOR, ["dir2", "dir22", ]),
+            "dir3",
+            "file",
+        ];
+        $actual = array_map(
+            [$this, "cutTempPath"],
+            Tools::search($this->tempPath, 0, ["*"], ["*"])
+        );
+        sort($actual);
+        // fwrite(STDERR, "\n" . var_export($actual, true) . "\n");###
+        $this->assertEquals($expected, $actual);
+
+        $expected = [
+            "dir1",
+            implode(DIRECTORY_SEPARATOR, ["dir1", "dir11", ]),
+            implode(DIRECTORY_SEPARATOR, ["dir1", "dir11", "dir111", ]),
+            implode(DIRECTORY_SEPARATOR, ["dir1", "dir11", "dir111", "deepFile", ]),
+            "dir2",
+            "dir3",
+        ];
+        $actual = array_map(
+            [$this, "cutTempPath"],
+            Tools::search($this->tempPath, 0, ["d*"], ["dir1*"])
+        );
+        sort($actual);
+        $this->assertEquals($expected, $actual);
+
+        $expected = [
+            implode(DIRECTORY_SEPARATOR, ["dir1", "dir11", "dir111", "deepFile", ]),
+            "file",
+        ];
+        $actual = array_map(
+            [$this, "cutTempPath"],
+            Tools::search(
+                $this->tempPath,
+                0,
+                ["*"],
+                ["*"],
+                "/cont/i"
+            )
+        );
+        sort($actual);
+        $this->assertEquals($expected, $actual);
+
+        $expected = [
+            "file",
+        ];
+        $actual = array_map(
+            [$this, "cutTempPath"],
+            Tools::search(
+                $this->tempPath,
+                0,
+                ["*"],
+                ["*"],
+                "CONT"
+            )
+        );
+        sort($actual);
+        // fwrite(STDERR, "\n" . var_export($actual, true) . "\n");###
+        $this->assertEquals($expected, $actual);
+    }
+
+    /**
+     * Tests recursive searching using callback.
+     *
+     * @return void
+     *
+     * @cover donbidon\Lib\FileSystem\Tools::search()
+     */
+    public function testSearchingCallback(): void
+    {
+        $this->expectException(\AssertionError::class);
+        $this->expectExceptionMessage(
+            "Path: file, needle: CONT"
+        );
+        $this->createDirStructure();
+        Tools::search(
+            $this->tempPath,
+            0,
+            ["*"],
+            ["*"],
+            "CONT",
+            function (string $path, array $args): void
+            {
+                throw new AssertionError(sprintf(
+                    "Path: %s, needle: %s",
+                    $this->cutTempPath($path),
+                    $args["needle"]
+                ));
+            }
+        );
     }
 
     /**
@@ -94,6 +250,8 @@ class Tools_Test extends \PHPUnit\Framework\TestCase
      * @return void
      *
      * @see self::testRemove()
+     *
+     * @internal
      */
     public function buildDirStructure(SplFileInfo $file): void
     {
@@ -102,6 +260,20 @@ class Tools_Test extends \PHPUnit\Framework\TestCase
             $file->isDir() ? "D" : "F",
             substr($file->getRealPath(), strlen($this->tempPath) + 1)
         ));
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return void
+     */
+    protected function tearDown(): void
+    {
+        if (!is_null($this->tempPath) && is_dir($this->tempPath)) {
+            Tools::removeDir($this->tempPath);
+        }
+
+        parent::tearDown();
     }
 
     /**
@@ -145,14 +317,31 @@ class Tools_Test extends \PHPUnit\Framework\TestCase
                 DIRECTORY_SEPARATOR,
                 [$this->tempPath, "file"]
             ),
-            ""
+            "someCONTEnt"
         );
         file_put_contents(
             implode(
                 DIRECTORY_SEPARATOR,
                 [$deepPath, "deepFile"]
             ),
-            ""
+            "contraception"
         );
+    }
+
+    /**
+     * Callback cutting $this->tempPath.
+
+     * @param string $path
+     *
+     * @return string
+     *
+     * @see self::testSearching()
+     * @see self::testSearchingCallback()
+     *
+     * @internal
+     */
+    protected function cutTempPath(string $path): string
+    {
+        return substr($path, strlen($this->tempPath) + 1);
     }
 }
