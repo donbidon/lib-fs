@@ -7,7 +7,7 @@
     verbose="true"
 >
     <testsuites>
-        <testsuite name="File system related library">
+        <testsuite name="File system library testsuite">
             <directory suffix="_Test.php">tests</directory>
         </testsuite>
     </testsuites>
