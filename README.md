@@ -1,7 +1,7 @@
-# File system related library
+# File system library
 [![Latest Stable Version](https://img.shields.io/packagist/v/donbidon/lib-fs.svg?style=flat-square)](https://packagist.org/packages/donbidon/lib-fs)
 [![Packagist](https://img.shields.io/packagist/dt/donbidon/lib-fs.svg)](https://packagist.org/packages/donbidon/lib-fs)
-![PHP from Packagist](https://img.shields.io/packagist/php-v/donbidon/lib-fs.svg)
+[![PHP from Packagist](https://img.shields.io/packagist/php-v/donbidon/lib-fs.svg)](http://php.net/)
 [![GitHub license](https://img.shields.io/github/license/donbidon/lib-fs.svg)](https://github.com/donbidon/lib-fs/blob/master/LICENSE)
 
 [![Build Status](https://travis-ci.com/donbidon/lib-fs.svg?branch=master)](https://travis-ci.com/donbidon/lib-fs)
@@ -12,7 +12,7 @@
 
 Look [API documentation](https://donbidon.github.io/docs/packages/lib-fs/).
 
-## Installing
+## Installation
 Run `composer require donbidon/lib-fs ~0.2`.
 
 ## Usage
