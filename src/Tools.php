@@ -253,7 +253,7 @@ class Tools
             $dirs,
             function (string $path): bool {
                 $result = !preg_match(
-                    sprintf("/%s\\.{1,2}$/", preg_quote(DIRECTORY_SEPARATOR)),
+                    "/" . preg_quote(DIRECTORY_SEPARATOR, "/") . "\.{1,2}$/",
                     $path
                 );
 
