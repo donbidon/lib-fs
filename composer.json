@@ -1,7 +1,7 @@
 {
     "name": "donbidon/lib-fs",
     "type": "library",
-    "description": "File system related library",
+    "description": "File system library",
     "keywords": ["php", "library", "file", "system", "fs"],
     "license": "MIT",
     "authors": [
