@@ -56,7 +56,7 @@ class Tools
      * ```php
      * \donbidon\Lib\FileSystem\Tools::walkDir(
      *     "/path/to/dir",
-     *     function (\SplFileInfo $file, array $args): void
+     *     function (\SplFileInfo $file, $key, array $args): void
      *     {
      *         // $args["path"] contains passed "/path/to/dir" ($path)
      *         echo sprintf(
@@ -90,10 +90,9 @@ class Tools
             RecursiveDirectoryIterator::SKIP_DOTS
         );
         $files = iterator_to_array(new RecursiveIteratorIterator(
-                $dir,
-                RecursiveIteratorIterator::CHILD_FIRST
-            )
-        );
+            $dir,
+            RecursiveIteratorIterator::CHILD_FIRST
+        ));
         array_walk($files, $callback, ["path" => $path]);
     }
 
@@ -130,18 +129,18 @@ class Tools
      * ```php
      * // Search for all directories recursively:
      * $dirs = \donbidon\Lib\FileSystem\Tools::search(
-     *     "/path/to/top/level",
+     *     "/path/to/dir",
      *     GLOB_ONLYDIR,
-     *     ["*", ".*"],
+     *     [],
      *     ["*", ".*"]
      * );
      *
      * // Replace contents of files:
      * \donbidon\Lib\FileSystem\Tools::search(
-     *     "/path/to/top/level",
+     *     "/path/to/dir",
      *     0,
-     *     ["*.php"],
-     *     ["*"],
+     *     ["*", ".*"],
+     *     ["*", ".*"],
      *     "needle",
      *     function ($path, array $args)
      *     {
@@ -182,107 +181,105 @@ class Tools
             "needle" => $needle,
         ];
         $return = [];
+
+        // Files {
+
         foreach ($patterns as $pattern) {
+
+            // Collect files {
+
             $path = implode(DIRECTORY_SEPARATOR, [$dir, $pattern]);
-            $result = glob($path, $flags);
-            $result = array_filter($result, [__CLASS__, "filterDots"]);
+            $result = array_filter(
+                glob($path, $flags),
+                function (string $path): bool
+                {
+                    $result = !is_dir($path);
+
+                    return $result;
+                }
+            );
+
+            // } Collect files
+            // Filter files by content {
+
             if (!is_null($needle)) {
                 static::$needle = $needle;
                 $result = array_filter(
-                    array_filter(
-                        $result,
-                        function (string $path): bool
-                        {
-                            return !is_dir($path);
-                        }
-                    ),
-                    [__CLASS__, "filterFileByContents"]
+                    $result,
+                    function (string $path): bool
+                    {
+                        $contents = file_get_contents($path);
+
+                        $result =
+                            "/" == substr(static::$needle, 0, 1)
+                                ? (bool)preg_match(static::$needle, $contents)
+                                : FALSE !== strpos($contents, static::$needle);
+
+                        return $result;
+                    }
                 );
                 static::$needle = null;
             }
-            if (is_null($callback)) {
-                $return = array_merge($return, $result);
-            } else {
+
+            // } Filter files by content
+            // Apply callback {
+
+            if (!is_null($callback)) {
                 foreach ($result as $path) {
                     call_user_func($callback, $path, $args);
                 }
             }
-            $dirs = [];
-            foreach ($recursive as $dirPattern) {
-                $dirs = array_merge(
-                    $dirs,
-                    glob(implode(
-                        DIRECTORY_SEPARATOR, [$dir, $dirPattern]),
-                        GLOB_ONLYDIR
-                    )
-                );
-            }
-            $dirs = array_filter($dirs, [__CLASS__, "filterDots"]);
-            foreach ($dirs as $subdir) {
-                $return = array_merge(
-                    $return,
-                    self::search(
-                        $subdir,
-                        $flags,
-                        $patterns,
-                        $recursive,
-                        $needle,
-                        $callback,
-                        $args
-                    )
-                );
-            }
+
+            // } Apply callback
+
+            $return = array_merge($return, $result);
+
         }
 
-        return $return;
-    }
+        // } Files {
+        // Dirs {
 
-    /**
-     * Returns false if path is ending with
-     * "{DIRECTORY_SEPARATOR}.." or "{DIRECTORY_SEPARATOR}.".
-     *
-     * ```php
-     * $dirs = array_filter(
-     *     glob("/path/to/.*", GLOB_ONLYDIR),
-     *     [\donbidon\Lib\FileSystem\Tools, "filterDots"]
-     * );
-     * ```
-     *
-     * @param string $path
-     *
-     * @return bool
-     *
-     * @see self::search()
-     *
-     * @internal
-     */
-    protected static function filterDots(string $path): bool
-    {
-        $result = !(
-            DIRECTORY_SEPARATOR . ".." == substr($path, -3) ||
-            DIRECTORY_SEPARATOR . "." == substr($path, -2)
+        $dirs = [];
+        foreach ($recursive as $dirPattern) {
+            $dirs = array_merge(
+                $dirs,
+                glob(
+                    implode(DIRECTORY_SEPARATOR, [$dir, $dirPattern]),
+                    GLOB_ONLYDIR
+                )
+            );
+        }
+        $dirs = array_filter(
+            $dirs,
+            function (string $path): bool {
+                $result = !preg_match(
+                    sprintf("/%s\.{1,2}$/", preg_quote(DIRECTORY_SEPARATOR)),
+                    $path
+                );
+
+                return $result;
+            }
         );
+        if (is_null($needle)) {
+            $return = array_merge($return, $dirs);
+        }
+        foreach ($dirs as $subdir) {
+            $return = array_merge(
+                $return,
+                self::search(
+                    $subdir,
+                    $flags,
+                    $patterns,
+                    $recursive,
+                    $needle,
+                    $callback,
+                    $args
+                )
+            );
+        }
 
-        return $result;
-    }
+        // } Dirs
 
-    /**
-     * Filters files by search string.
-     *
-     * @param string $path
-     *
-     * @return bool
-     *
-     * @internal
-     */
-    protected static function filterFileByContents(string $path): bool
-    {
-        $contents = file_get_contents($path);
-        $result =
-            "/" == substr(static::$needle, 0, 1)
-                ? (bool)preg_match(static::$needle, $contents)
-                : FALSE !== strpos($contents, static::$needle);
-
-        return $result;
+        return $return;
     }
 }

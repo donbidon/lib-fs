@@ -30,6 +30,7 @@ class Tools_Test extends \PHPUnit\Framework\TestCase
      * @var string
      *
      * @see self::createDirStructure()
+     * @see self::cutTempPath()
      */
     protected $tempPath;
 
@@ -42,6 +43,16 @@ class Tools_Test extends \PHPUnit\Framework\TestCase
      * @see self::buildDirStructure()
      */
     protected $dirStructure;
+
+    /**
+     * Search results
+     *
+     * @var array
+     *
+     * @see self::
+     * @see self::storeSearchResults()
+     */
+    protected $searchResults;
 
     /**
      * Tests exception when passed wrong path.
@@ -102,21 +113,6 @@ class Tools_Test extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * Tests recursive searching passing default args.
-     *
-     * @return void
-     *
-     * @cover donbidon\Lib\FileSystem\Tools::search()
-     */
-    public function testSearchingPassingEmptyArgs(): void
-    {
-        $this->assertEquals(
-            [],
-            Tools::search("")
-        );
-    }
-
-    /**
      * Tests recursive searching.
      *
      * @return void
@@ -127,7 +123,12 @@ class Tools_Test extends \PHPUnit\Framework\TestCase
     {
         $this->createDirStructure();
 
-        $expected = ["dir1", "dir2", "dir3", "file", ];
+        $this->assertEquals(
+            [],
+            Tools::search("")
+        );
+
+        $expected = ["file", ];
         $actual = array_map(
             [$this, "cutTempPath"],
             Tools::search($this->tempPath, 0, ["*"])
@@ -158,7 +159,6 @@ class Tools_Test extends \PHPUnit\Framework\TestCase
             Tools::search($this->tempPath, 0, ["*"], ["*"])
         );
         sort($actual);
-        // fwrite(STDERR, "\n" . var_export($actual, true) . "\n");###
         $this->assertEquals($expected, $actual);
 
         $expected = [
@@ -167,7 +167,22 @@ class Tools_Test extends \PHPUnit\Framework\TestCase
             implode(DIRECTORY_SEPARATOR, ["dir1", "dir11", "dir111", ]),
             implode(DIRECTORY_SEPARATOR, ["dir1", "dir11", "dir111", "deepFile", ]),
             "dir2",
+            implode(DIRECTORY_SEPARATOR, ["dir2", "dir22", ]),
             "dir3",
+            "file",
+        ];
+        $actual = array_map(
+            [$this, "cutTempPath"],
+            Tools::search($this->tempPath, 0, ["*", ".*"], ["*", ".*"])
+        );
+        sort($actual);
+        $this->assertEquals($expected, $actual);
+
+        $expected = [
+            "dir1",
+            implode(DIRECTORY_SEPARATOR, ["dir1", "dir11", ]),
+            implode(DIRECTORY_SEPARATOR, ["dir1", "dir11", "dir111", ]),
+            implode(DIRECTORY_SEPARATOR, ["dir1", "dir11", "dir111", "deepFile", ]),
         ];
         $actual = array_map(
             [$this, "cutTempPath"],
@@ -207,7 +222,6 @@ class Tools_Test extends \PHPUnit\Framework\TestCase
             )
         );
         sort($actual);
-        // fwrite(STDERR, "\n" . var_export($actual, true) . "\n");###
         $this->assertEquals($expected, $actual);
     }
 
@@ -220,26 +234,47 @@ class Tools_Test extends \PHPUnit\Framework\TestCase
      */
     public function testSearchingCallback(): void
     {
-        $this->expectException(\AssertionError::class);
-        $this->expectExceptionMessage(
-            "Path: file, needle: CONT"
-        );
         $this->createDirStructure();
+        $this->searchResults = [];
         Tools::search(
             $this->tempPath,
             0,
             ["*"],
             ["*"],
             "CONT",
-            function (string $path, array $args): void
-            {
-                throw new AssertionError(sprintf(
-                    "Path: %s, needle: %s",
-                    $this->cutTempPath($path),
-                    $args["needle"]
-                ));
-            }
+            [$this, "storeSearchResults"]
         );
+        Tools::search(
+            $this->tempPath,
+            0,
+            ["*"],
+            ["*"],
+            "/cont/i",
+            [$this, "storeSearchResults"]
+        );
+        Tools::search(
+            $this->tempPath,
+            0,
+            ["*"],
+            ["*"],
+            "notFound",
+            [$this, "storeSearchResults"]
+        );
+        $expected = [
+            [
+                "path"   => "file",
+                "needle" => "CONT",
+            ],
+            [
+                "path"   => "file",
+                "needle" => "/cont/i",
+            ],
+            [
+                "path"   => implode(DIRECTORY_SEPARATOR, ["dir1", "dir11", "dir111", "deepFile", ]),
+                "needle" => "/cont/i",
+            ],
+        ];
+        $this->assertEquals($expected, $this->searchResults);
     }
 
     /**
@@ -250,8 +285,6 @@ class Tools_Test extends \PHPUnit\Framework\TestCase
      * @return void
      *
      * @see self::testRemove()
-     *
-     * @internal
      */
     public function buildDirStructure(SplFileInfo $file): void
     {
@@ -260,6 +293,24 @@ class Tools_Test extends \PHPUnit\Framework\TestCase
             $file->isDir() ? "D" : "F",
             substr($file->getRealPath(), strlen($this->tempPath) + 1)
         ));
+    }
+
+    /**
+     * Callback using to store search results.
+
+     * @param string $path
+     * @param array  $args
+     *
+     * @return string
+     *
+     * @see self::testSearchingCallback()
+     */
+    public function storeSearchResults(string $path, array $args): void
+    {
+        $this->searchResults[] = [
+            "path"   => $this->cutTempPath($path),
+            "needle" => $args["needle"],
+        ];
     }
 
     /**
@@ -279,9 +330,9 @@ class Tools_Test extends \PHPUnit\Framework\TestCase
     /**
      * Creates directory structure.
      *
-     * @return void
+     * Sets {@see self::$tempPath}.
      *
-     * @internal
+     * @return void
      */
     protected function createDirStructure(): void
     {
@@ -336,12 +387,19 @@ class Tools_Test extends \PHPUnit\Framework\TestCase
      * @return string
      *
      * @see self::testSearching()
-     * @see self::testSearchingCallback()
-     *
-     * @internal
      */
     protected function cutTempPath(string $path): string
     {
-        return substr($path, strlen($this->tempPath) + 1);
+        /*
+        $len = strlen($this->tempPath);
+        if (strlen($path) != $len) {
+            $result = substr($path, $len + 1);
+        } else {
+            $result = "";
+        }
+        */
+        $result = substr($path, strlen($this->tempPath) + 1);
+
+        return $result;
     }
 }

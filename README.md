@@ -20,12 +20,12 @@ Run `composer require donbidon/lib-fs ~0.2`.
 ```php
 \donbidon\Lib\FileSystem\Tools::walkDir(
     "/path/to/dir",
-    function (\SplFileInfo $file): void
+    function (\SplFileInfo $file, $key, array $args): void
     {
-        $path = $file->getRealPath();
+        // $args["path"] contains passed "/path/to/dir" ($path)
         echo sprintf(
             "[%s] %s%s", $file->isDir() ? "DIR " : "file",
-            $path,
+            $file->getRealPath(),
             PHP_EOL
         );
     }
@@ -35,22 +35,23 @@ Run `composer require donbidon/lib-fs ~0.2`.
 ### Tools: removing directory recursively
 ```php
 \donbidon\Lib\FileSystem\Tools::removeDir("/path/to/dir");
+// clearstatcache(...);
 ```
 
 ### Tools: searching & replacing recursively
 ```php
 \donbidon\Lib\FileSystem\Tools::search(
-    "/path/to/top/level",
-    0,         // glob flags
-    ["*.php"], // File name glob patterns
-    ["*"],     // Subdir name glob patterns
-    "needle",  // String to search in files, if starts with "/" processes
-               // like regular expression
-    // Callback
-    function (string $path): void
+    "/path/to/dir",
+    0,
+    ["*", ".*"],
+    ["*", ".*"],
+    "needle",
+    function ($path, array $args)
     {
+        // $args["path"] contains passed "/path/to/dir" ($dir)
+        // $args["needle"] contains passed "needle" ($needle)
         $contents = file_get_contents($path);
-        $contents = preg_replace("/needle/", "replace", $contents);
+        $contents = preg_replace("/needle/", "replacement", $contents);
         file_put_contents($path, $contents);
     }
 );
