@@ -156,7 +156,7 @@ class Tools
      * @param string   $dir        Path to top level directory
      * @param int      $flags      Flags (php://glob())
      * @param array    $patterns   File name patterns (php://glob())
-     * @param array    $recursive  Subdir names patterns (php://glob())
+     * @param array    $recursive  Subdir name patterns (php://glob())
      * @param string   $needle     String to search in files, if starts with "/" processes like regular expression
      * @param callback $callback   If passed empty array will be returned and callback will be called
      *                             on every found file/directory
