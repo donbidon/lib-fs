@@ -42,10 +42,10 @@ Run `composer require donbidon/lib-fs ~0.2`.
 ```php
 \donbidon\Lib\FileSystem\Tools::search(
     "/path/to/dir",
-    0,
-    ["*", ".*"],
-    ["*", ".*"],
-    "needle",
+    0,           // Flags (php://glob())
+    ["*", ".*"], // File name patterns (php://glob())
+    ["*", ".*"], // Subdir name patterns (php://glob())
+    "needle",    // String to search in files, if starts with "/" processes like regular expression
     function ($path, array $args)
     {
         // $args["path"] contains passed "/path/to/dir" ($dir)
